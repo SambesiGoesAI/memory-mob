@@ -33,16 +33,16 @@ export default function ReminderCard({ reminder, onEdit, onDelete }) {
         <span className={`status-badge ${reminder.status}`}>
           {reminder.status === 'pending' ? 'odottaa' : 'lähetetty'}
         </span>
-        {isPending && (
-          <div className="card-actions">
+        <div className="card-actions">
+          {isPending && (
             <button className="btn-icon" title="Muokkaa" onClick={() => onEdit(reminder)}>
               ✎
             </button>
-            <button className="btn-icon danger" title="Poista" onClick={() => onDelete(reminder.id)}>
-              ✕
-            </button>
-          </div>
-        )}
+          )}
+          <button className="btn-icon danger" title="Arkistoi" onClick={() => onDelete(reminder.id)}>
+            ✕
+          </button>
+        </div>
       </div>
     </div>
   )

@@ -248,6 +248,32 @@
   margin: 0;
 }
 
+/* ── Header actions ─────────────────────────────────── */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── Archive card ────────────────────────────────────── */
+
+.reminder-card.archived {
+  border-left-color: var(--border);
+  opacity: 0.8;
+}
+
+.card-archived-at {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.btn-sm {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.82rem;
+}
+
 /* ── Error banner ───────────────────────────────────── */
 
 .error-banner {
