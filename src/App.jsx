@@ -85,7 +85,7 @@ export default function App() {
   const handleEdit = async ({ message, reminder_time }) => {
     const { error } = await supabase
       .from('reminders')
-      .update({ message, reminder_time, updated_at: new Date().toISOString() })
+      .update({ message, reminder_time, status: 'pending', updated_at: new Date().toISOString() })
       .eq('id', editTarget.id)
     if (error) throw new Error(error.message)
     closeForm()
