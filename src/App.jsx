@@ -64,14 +64,15 @@ export default function App() {
   const closeForm = () => {
     setShowForm(false)
     setEditTarget(null)
-    // iOS Safari zooms into inputs and doesn't reset on its own when a modal
-    // closes. Briefly forcing maximum-scale=1 snaps the viewport back to 1:1,
-    // then we restore the original value so pinch-zoom still works.
+    // iOS Safari zooms the viewport on input focus and doesn't reset it when
+    // the modal closes. Setting maximum-scale=1 forces a snap back to 1:1,
+    // then we restore it after a delay so pinch-zoom still works normally.
     const viewport = document.querySelector('meta[name="viewport"]')
     if (viewport) {
-      const original = viewport.content
-      viewport.content = original + ', maximum-scale=1'
-      requestAnimationFrame(() => { viewport.content = original })
+      viewport.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1')
+      setTimeout(() => {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1')
+      }, 300)
     }
   }
 
