@@ -1,0 +1,336 @@
+/* ── Layout ─────────────────────────────────────────── */
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-header h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* ── Buttons ─────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+.btn-ghost:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  padding: 0.25rem 0.4rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+}
+.btn-icon:hover {
+  background: var(--border);
+  color: var(--text);
+}
+.btn-icon.danger:hover {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+/* ── Filter bar ────────────────────────────────────── */
+
+.filter-bar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.filter-btn {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-transform: capitalize;
+  transition: background 0.15s, color 0.15s;
+}
+.filter-btn:hover {
+  background: var(--border);
+  color: var(--text);
+}
+.filter-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.filter-btn.active .filter-count {
+  background: rgba(255,255,255,0.25);
+}
+
+.filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--border);
+  border-radius: 10px;
+  padding: 0 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* ── Reminder list ──────────────────────────────────── */
+
+.reminder-list {
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── Reminder card ──────────────────────────────────── */
+
+.reminder-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1rem 1rem 1.25rem;
+  border-left: 4px solid var(--border);
+  transition: box-shadow 0.15s;
+}
+.reminder-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+.reminder-card.pending {
+  border-left-color: var(--pending);
+}
+.reminder-card.sent {
+  border-left-color: var(--sent);
+  opacity: 0.75;
+}
+.reminder-card.overdue {
+  border-left-color: var(--overdue);
+}
+
+.card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-message {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.card-time {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.card-countdown {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--pending);
+  background: #fef3c7;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+}
+.card-countdown.overdue {
+  color: var(--overdue);
+  background: #fee2e2;
+}
+
+.card-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.status-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+}
+.status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+.status-badge.sent {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+/* ── Empty state ────────────────────────────────────── */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 4rem 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+.empty-state p {
+  margin: 0;
+}
+
+/* ── Error banner ───────────────────────────────────── */
+
+.error-banner {
+  margin: 1rem 1.5rem 0;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* ── Modal ──────────────────────────────────────────── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+/* ── Form ───────────────────────────────────────────── */
+
+.reminder-form h2 {
+  font-size: 1.1rem;
+  margin-bottom: 1.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.field label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.field textarea,
+.field input[type="datetime-local"] {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color 0.15s;
+  resize: vertical;
+}
+.field textarea:focus,
+.field input[type="datetime-local"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.form-error {
+  margin: 0 0 0.75rem;
+  color: var(--danger);
+  font-size: 0.85rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
