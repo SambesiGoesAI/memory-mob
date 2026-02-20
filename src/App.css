@@ -293,10 +293,12 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 100;
   padding: 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal {
@@ -306,6 +308,7 @@
   width: 100%;
   max-width: 460px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  margin: auto;
 }
 
 /* ── Form ───────────────────────────────────────────── */
@@ -341,7 +344,7 @@
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  font-size: 0.95rem;
+  font-size: 1rem; /* ≥16px prevents iOS Safari auto-zoom on focus */
   font-family: inherit;
   background: var(--bg);
   color: var(--text);
