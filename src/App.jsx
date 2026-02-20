@@ -62,17 +62,18 @@ export default function App() {
   }, [view, fetchReminders, fetchArchived])
 
   const closeForm = () => {
+    // Blur the focused input first — iOS Safari won't start resetting zoom
+    // until the element that triggered it loses focus.
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
     setShowForm(false)
     setEditTarget(null)
-    // iOS Safari zooms the viewport on input focus and doesn't reset it when
-    // the modal closes. Setting maximum-scale=1 forces a snap back to 1:1,
-    // then we restore it after a delay so pinch-zoom still works normally.
+    // After blur, force viewport back to 1:1 scale then lift the restriction.
     const viewport = document.querySelector('meta[name="viewport"]')
     if (viewport) {
       viewport.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1')
       setTimeout(() => {
         viewport.setAttribute('content', 'width=device-width, initial-scale=1')
-      }, 300)
+      }, 500)
     }
   }
 
