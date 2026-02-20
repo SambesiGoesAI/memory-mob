@@ -8,6 +8,8 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const isSent = initial?.status === 'sent'
+
   useEffect(() => {
     if (initial) {
       setMessage(initial.message)
@@ -27,7 +29,6 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
 
     if (!message.trim()) return setError('Please enter a reminder message.')
 
-    // If only time is given and it resolves to today, warn if already past
     const reminderISO = buildReminderTime(date, time)
     if (!initial && new Date(reminderISO) <= new Date()) {
       return setError('That date and time is already in the past.')
@@ -43,9 +44,12 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
     }
   }
 
+  const title = isSent ? 'Reschedule reminder' : initial ? 'Edit reminder' : 'New reminder'
+  const submitLabel = loading ? 'Saving…' : isSent ? 'Reschedule' : initial ? 'Save changes' : 'Add reminder'
+
   return (
     <form className="reminder-form" onSubmit={handleSubmit}>
-      <h2>{initial ? 'Edit reminder' : 'New reminder'}</h2>
+      <h2>{title}</h2>
 
       <div className="field">
         <label htmlFor="msg">What do you want to remember?</label>
@@ -55,6 +59,8 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
           placeholder="e.g. Buy milk, Call dad, Pay electricity bill…"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          disabled={isSent}
+          className={isSent ? 'field-disabled' : ''}
         />
       </div>
 
@@ -95,7 +101,7 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
           Cancel
         </button>
         <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? 'Saving…' : initial ? 'Save changes' : 'Add reminder'}
+          {submitLabel}
         </button>
       </div>
     </form>
