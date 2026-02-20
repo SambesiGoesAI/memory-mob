@@ -55,7 +55,6 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
           placeholder="e.g. Buy milk, Call dad, Pay electricity bill…"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          autoFocus
         />
       </div>
 
