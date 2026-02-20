@@ -1,24 +1,14 @@
-const formatDateTime = (iso) => {
-  const d = new Date(iso)
-  return d.toLocaleString(undefined, {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
+import { formatFinnish, TZ } from '../lib/dateUtils'
 
 const timeUntil = (iso) => {
   const diff = new Date(iso) - new Date()
-  if (diff <= 0) return 'overdue'
+  if (diff <= 0) return 'myöhässä'
   const mins = Math.floor(diff / 60000)
-  if (mins < 60) return `in ${mins}m`
+  if (mins < 60) return `${mins} min`
   const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `in ${hrs}h ${mins % 60}m`
+  if (hrs < 24) return `${hrs} t ${mins % 60} min`
   const days = Math.floor(hrs / 24)
-  return `in ${days}d ${hrs % 24}h`
+  return `${days} pv ${hrs % 24} t`
 }
 
 export default function ReminderCard({ reminder, onEdit, onDelete }) {
@@ -30,7 +20,7 @@ export default function ReminderCard({ reminder, onEdit, onDelete }) {
       <div className="card-body">
         <p className="card-message">{reminder.message}</p>
         <div className="card-meta">
-          <span className="card-time">{formatDateTime(reminder.reminder_time)}</span>
+          <span className="card-time">{formatFinnish(reminder.reminder_time)}</span>
           {isPending && (
             <span className={`card-countdown ${isOverdue ? 'overdue' : ''}`}>
               {timeUntil(reminder.reminder_time)}
@@ -41,22 +31,14 @@ export default function ReminderCard({ reminder, onEdit, onDelete }) {
 
       <div className="card-side">
         <span className={`status-badge ${reminder.status}`}>
-          {reminder.status}
+          {reminder.status === 'pending' ? 'odottaa' : 'lähetetty'}
         </span>
         {isPending && (
           <div className="card-actions">
-            <button
-              className="btn-icon"
-              title="Edit"
-              onClick={() => onEdit(reminder)}
-            >
+            <button className="btn-icon" title="Muokkaa" onClick={() => onEdit(reminder)}>
               ✎
             </button>
-            <button
-              className="btn-icon danger"
-              title="Delete"
-              onClick={() => onDelete(reminder.id)}
-            >
+            <button className="btn-icon danger" title="Poista" onClick={() => onDelete(reminder.id)}>
               ✕
             </button>
           </div>

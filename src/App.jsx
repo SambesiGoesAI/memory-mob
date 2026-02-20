@@ -1,11 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase, CHAT_ID } from './lib/supabase'
+import { supabase } from './lib/supabase'
 import ReminderCard from './components/ReminderCard'
 import ReminderForm from './components/ReminderForm'
 import { v4 as uuidv4 } from 'uuid'
 import './App.css'
 
-const FILTERS = ['all', 'pending', 'sent']
+const FILTERS = [
+  { key: 'all', label: 'Kaikki' },
+  { key: 'pending', label: 'Odottaa' },
+  { key: 'sent', label: 'Lähetetty' },
+]
 
 export default function App() {
   const [reminders, setReminders] = useState([])
@@ -47,7 +51,7 @@ export default function App() {
       id: uuidv4(),
       message,
       reminder_time,
-      chat_id: CHAT_ID,
+      chat_id: uuidv4(),
       status: 'pending',
       created_at: now,
       updated_at: now,
@@ -68,7 +72,7 @@ export default function App() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this reminder?')) return
+    if (!window.confirm('Poistetaanko muistutus?')) return
     const { error } = await supabase
       .from('reminders')
       .update({ deleted_at: new Date().toISOString() })
@@ -88,17 +92,19 @@ export default function App() {
     sent: reminders.filter((r) => r.status === 'sent').length,
   }
 
+  const currentFilter = FILTERS.find((f) => f.key === filter)
+
   const isFormOpen = showForm || editTarget !== null
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Reminders</h1>
+        <h1>Muistutukset</h1>
         <button
           className="btn btn-primary"
           onClick={() => { setEditTarget(null); setShowForm(true) }}
         >
-          + New
+          + Uusi
         </button>
       </header>
 
@@ -118,13 +124,13 @@ export default function App() {
       )}
 
       <div className="filter-bar">
-        {FILTERS.map((f) => (
+        {FILTERS.map(({ key, label }) => (
           <button
-            key={f}
-            className={`filter-btn ${filter === f ? 'active' : ''}`}
-            onClick={() => setFilter(f)}
+            key={key}
+            className={`filter-btn ${filter === key ? 'active' : ''}`}
+            onClick={() => setFilter(key)}
           >
-            {f} <span className="filter-count">{counts[f]}</span>
+            {label} <span className="filter-count">{counts[key]}</span>
           </button>
         ))}
       </div>
@@ -132,16 +138,20 @@ export default function App() {
       {error && <div className="error-banner">{error}</div>}
 
       {loading ? (
-        <div className="empty-state">Loading…</div>
+        <div className="empty-state">Ladataan…</div>
       ) : filtered.length === 0 ? (
         <div className="empty-state">
-          <p>{filter === 'pending' ? 'No pending reminders.' : `No ${filter} reminders.`}</p>
+          <p>
+            {filter === 'pending'
+              ? 'Ei odottavia muistutuksia.'
+              : `Ei ${currentFilter.label.toLowerCase()}-muistutuksia.`}
+          </p>
           {filter === 'pending' && (
             <button
               className="btn btn-ghost"
               onClick={() => { setEditTarget(null); setShowForm(true) }}
             >
-              Add one
+              Lisää muistutus
             </button>
           )}
         </div>

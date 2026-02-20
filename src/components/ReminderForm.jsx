@@ -1,24 +1,23 @@
 import { useState, useEffect } from 'react'
-
-const toLocalDatetimeValue = (isoString) => {
-  if (!isoString) return ''
-  const d = new Date(isoString)
-  const pad = (n) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
+import { buildReminderTime, isoToHelsinki, todayHelsinki } from '../lib/dateUtils'
 
 export default function ReminderForm({ onSubmit, onCancel, initial }) {
-  const [message, setMessage] = useState(initial?.message || '')
-  const [reminderTime, setReminderTime] = useState(
-    initial ? toLocalDatetimeValue(initial.reminder_time) : ''
-  )
+  const [message, setMessage] = useState('')
+  const [date, setDate] = useState('')
+  const [time, setTime] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (initial) {
       setMessage(initial.message)
-      setReminderTime(toLocalDatetimeValue(initial.reminder_time))
+      const { date: d, time: t } = isoToHelsinki(initial.reminder_time)
+      setDate(d)
+      setTime(t)
+    } else {
+      setMessage('')
+      setDate('')
+      setTime('')
     }
   }, [initial])
 
@@ -26,18 +25,17 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
     e.preventDefault()
     setError('')
 
-    if (!message.trim()) return setError('Message is required.')
-    if (!reminderTime) return setError('Reminder time is required.')
+    if (!message.trim()) return setError('Please enter a reminder message.')
 
-    const dt = new Date(reminderTime)
-    if (!initial && dt <= new Date()) return setError('Reminder time must be in the future.')
+    // If only time is given and it resolves to today, warn if already past
+    const reminderISO = buildReminderTime(date, time)
+    if (!initial && new Date(reminderISO) <= new Date()) {
+      return setError('That date and time is already in the past.')
+    }
 
     setLoading(true)
     try {
-      await onSubmit({
-        message: message.trim(),
-        reminder_time: dt.toISOString(),
-      })
+      await onSubmit({ message: message.trim(), reminder_time: reminderISO })
     } catch (err) {
       setError(err.message || 'Something went wrong.')
     } finally {
@@ -47,29 +45,49 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
 
   return (
     <form className="reminder-form" onSubmit={handleSubmit}>
-      <h2>{initial ? 'Edit Reminder' : 'New Reminder'}</h2>
+      <h2>{initial ? 'Edit reminder' : 'New reminder'}</h2>
 
       <div className="field">
-        <label htmlFor="message">Message</label>
+        <label htmlFor="msg">What do you want to remember?</label>
         <textarea
-          id="message"
+          id="msg"
           rows={3}
-          placeholder="What do you want to be reminded about?"
+          placeholder="e.g. Buy milk, Call dad, Pay electricity bill…"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           autoFocus
         />
       </div>
 
-      <div className="field">
-        <label htmlFor="reminder-time">Remind me at</label>
-        <input
-          id="reminder-time"
-          type="datetime-local"
-          value={reminderTime}
-          onChange={(e) => setReminderTime(e.target.value)}
-        />
+      <div className="field-row">
+        <div className="field">
+          <label htmlFor="date">Date <span className="optional">(leave empty = today)</span></label>
+          <input
+            id="date"
+            type="date"
+            value={date}
+            min={todayHelsinki()}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="time">Time <span className="optional">(leave empty = 21:00)</span></label>
+          <input
+            id="time"
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+          />
+        </div>
       </div>
+
+      <p className="form-hint">
+        {!date && !time && 'Will be set to today at 21:00'}
+        {date && !time && 'Time will default to 21:00'}
+        {!date && time && `Will be set to today at ${time}`}
+        {date && time && `Reminder set for ${date} at ${time}`}
+      </p>
 
       {error && <p className="form-error">{error}</p>}
 

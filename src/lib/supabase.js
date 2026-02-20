@@ -8,6 +8,3 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-// chat_id is fixed per the single-user setup — set via env var
-export const CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID || ''
