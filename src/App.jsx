@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from './lib/supabase'
 import ReminderCard from './components/ReminderCard'
+import ArchiveCard from './components/ArchiveCard'
 import ReminderForm from './components/ReminderForm'
 import { v4 as uuidv4 } from 'uuid'
 import './App.css'
@@ -12,7 +13,9 @@ const FILTERS = [
 ]
 
 export default function App() {
+  const [view, setView] = useState('list') // 'list' | 'archive'
   const [reminders, setReminders] = useState([])
+  const [archived, setArchived] = useState([])
   const [filter, setFilter] = useState('pending')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -36,9 +39,27 @@ export default function App() {
     setLoading(false)
   }, [])
 
+  const fetchArchived = useCallback(async () => {
+    setLoading(true)
+    setError('')
+    const { data, error } = await supabase
+      .from('reminders')
+      .select('*')
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false })
+
+    if (error) {
+      setError('Arkiston lataus epäonnistui: ' + error.message)
+    } else {
+      setArchived(data)
+    }
+    setLoading(false)
+  }, [])
+
   useEffect(() => {
-    fetchReminders()
-  }, [fetchReminders])
+    if (view === 'list') fetchReminders()
+    else fetchArchived()
+  }, [view, fetchReminders, fetchArchived])
 
   const closeForm = () => {
     setShowForm(false)
@@ -72,16 +93,28 @@ export default function App() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Poistetaanko muistutus?')) return
+    if (!window.confirm('Arkistoidaanko muistutus?')) return
     const { error } = await supabase
       .from('reminders')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id)
     if (error) {
-      setError('Delete failed: ' + error.message)
+      setError('Arkistointi epäonnistui: ' + error.message)
       return
     }
     setReminders((prev) => prev.filter((r) => r.id !== id))
+  }
+
+  const handleRestore = async (id) => {
+    const { error } = await supabase
+      .from('reminders')
+      .update({ deleted_at: null })
+      .eq('id', id)
+    if (error) {
+      setError('Palautus epäonnistui: ' + error.message)
+      return
+    }
+    setArchived((prev) => prev.filter((r) => r.id !== id))
   }
 
   const filtered = reminders.filter((r) => filter === 'all' || r.status === filter)
@@ -93,19 +126,37 @@ export default function App() {
   }
 
   const currentFilter = FILTERS.find((f) => f.key === filter)
-
   const isFormOpen = showForm || editTarget !== null
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Muistutukset</h1>
-        <button
-          className="btn btn-primary"
-          onClick={() => { setEditTarget(null); setShowForm(true) }}
-        >
-          + Uusi
-        </button>
+        <h1>{view === 'archive' ? 'Arkisto' : 'Muistutukset'}</h1>
+        <div className="header-actions">
+          {view === 'list' ? (
+            <>
+              <button
+                className="btn btn-ghost"
+                onClick={() => setView('archive')}
+              >
+                Arkisto
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => { setEditTarget(null); setShowForm(true) }}
+              >
+                + Uusi
+              </button>
+            </>
+          ) : (
+            <button
+              className="btn btn-ghost"
+              onClick={() => setView('list')}
+            >
+              ← Takaisin
+            </button>
+          )}
+        </div>
       </header>
 
       {isFormOpen && (
@@ -123,22 +174,38 @@ export default function App() {
         </div>
       )}
 
-      <div className="filter-bar">
-        {FILTERS.map(({ key, label }) => (
-          <button
-            key={key}
-            className={`filter-btn ${filter === key ? 'active' : ''}`}
-            onClick={() => setFilter(key)}
-          >
-            {label} <span className="filter-count">{counts[key]}</span>
-          </button>
-        ))}
-      </div>
+      {view === 'list' && (
+        <div className="filter-bar">
+          {FILTERS.map(({ key, label }) => (
+            <button
+              key={key}
+              className={`filter-btn ${filter === key ? 'active' : ''}`}
+              onClick={() => setFilter(key)}
+            >
+              {label} <span className="filter-count">{counts[key]}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {error && <div className="error-banner">{error}</div>}
 
       {loading ? (
         <div className="empty-state">Ladataan…</div>
+      ) : view === 'archive' ? (
+        archived.length === 0 ? (
+          <div className="empty-state">
+            <p>Arkisto on tyhjä.</p>
+          </div>
+        ) : (
+          <ul className="reminder-list">
+            {archived.map((r) => (
+              <li key={r.id}>
+                <ArchiveCard reminder={r} onRestore={handleRestore} />
+              </li>
+            ))}
+          </ul>
+        )
       ) : filtered.length === 0 ? (
         <div className="empty-state">
           <p>
