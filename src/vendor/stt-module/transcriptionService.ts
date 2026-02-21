@@ -91,7 +91,6 @@ export class TranscriptionService implements ITranscriptionService {
         raw: data
       };
     } catch (error) {
-      console.error('Transcription error:', error);
       throw error;
     }
   }

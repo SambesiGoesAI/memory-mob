@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { supabase } from './lib/supabase'
 import ReminderCard from './components/ReminderCard'
 import ArchiveCard from './components/ArchiveCard'
@@ -11,6 +11,9 @@ const FILTERS = [
   { key: 'pending', label: 'Odottaa' },
   { key: 'sent', label: 'Lähetetty' },
 ]
+
+/** How long (ms) the undo-archive toast stays visible before auto-dismissing. */
+const TOAST_DURATION_MS = 2500
 
 export default function App() {
   const [view, setView] = useState('list') // 'list' | 'archive'
@@ -59,11 +62,14 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    // setState calls inside these async functions execute after the effect has
+    // already returned, so they do not cause synchronous cascading renders.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (view === 'list') fetchReminders()
     else fetchArchived()
   }, [view, fetchReminders, fetchArchived])
 
-  const closeForm = () => {
+  const closeForm = useCallback(() => {
     // Blur the focused input first — iOS Safari won't start resetting zoom
     // until the element that triggered it loses focus.
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
@@ -77,9 +83,9 @@ export default function App() {
         viewport.setAttribute('content', 'width=device-width, initial-scale=1')
       }, 500)
     }
-  }
+  }, [])
 
-  const handleCreate = async ({ message, reminder_time }) => {
+  const handleCreate = useCallback(async ({ message, reminder_time }) => {
     const now = new Date().toISOString()
     const { error } = await supabase.from('reminders').insert({
       id: uuidv4(),
@@ -93,9 +99,9 @@ export default function App() {
     if (error) throw new Error(error.message)
     closeForm()
     await fetchReminders()
-  }
+  }, [closeForm, fetchReminders])
 
-  const handleEdit = async ({ message, reminder_time }) => {
+  const handleEdit = useCallback(async ({ message, reminder_time }) => {
     const { error } = await supabase
       .from('reminders')
       .update({ message, reminder_time, status: 'pending', updated_at: new Date().toISOString() })
@@ -103,9 +109,9 @@ export default function App() {
     if (error) throw new Error(error.message)
     closeForm()
     await fetchReminders()
-  }
+  }, [editTarget, closeForm, fetchReminders])
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     const { error } = await supabase
       .from('reminders')
       .update({ deleted_at: new Date().toISOString() })
@@ -117,10 +123,10 @@ export default function App() {
     setReminders((prev) => prev.filter((r) => r.id !== id))
     clearTimeout(toastTimer.current)
     setArchivedToastId(id)
-    toastTimer.current = setTimeout(() => setArchivedToastId(null), 2500)
-  }
+    toastTimer.current = setTimeout(() => setArchivedToastId(null), TOAST_DURATION_MS)
+  }, [])
 
-  const handleUndoArchive = async () => {
+  const handleUndoArchive = useCallback(async () => {
     clearTimeout(toastTimer.current)
     const id = archivedToastId
     setArchivedToastId(null)
@@ -133,9 +139,9 @@ export default function App() {
       return
     }
     await fetchReminders()
-  }
+  }, [archivedToastId, fetchReminders])
 
-  const handleRestore = async (id) => {
+  const handleRestore = useCallback(async (id) => {
     const { error } = await supabase
       .from('reminders')
       .update({ deleted_at: null })
@@ -145,17 +151,24 @@ export default function App() {
       return
     }
     setArchived((prev) => prev.filter((r) => r.id !== id))
-  }
+  }, [])
 
-  const filtered = reminders.filter((r) => filter === 'all' || r.status === filter)
+  const filtered = useMemo(
+    () => reminders.filter((r) => filter === 'all' || r.status === filter),
+    [reminders, filter],
+  )
 
-  const counts = {
+  const counts = useMemo(() => ({
     all: reminders.length,
     pending: reminders.filter((r) => r.status === 'pending').length,
     sent: reminders.filter((r) => r.status === 'sent').length,
-  }
+  }), [reminders])
 
-  const currentFilter = FILTERS.find((f) => f.key === filter)
+  const currentFilter = useMemo(
+    () => FILTERS.find((f) => f.key === filter),
+    [filter],
+  )
+
   const isFormOpen = showForm || editTarget !== null
 
   return (

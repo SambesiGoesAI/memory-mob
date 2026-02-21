@@ -71,7 +71,6 @@ export const useAudioRecorder = (
       setIsRecording(true);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to start recording';
-      console.error('Error starting recording:', err);
       setError(errorMessage);
     }
   }, [constraints]);
