@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { buildReminderTime, isoToHelsinki, todayHelsinki } from '../lib/dateUtils'
 import { useAudioRecorder, transcriptionService } from '@yourusername/stt-module'
 import groqParser from '../lib/groqParser'
@@ -43,16 +43,15 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
     if (recordingError) setError(recordingError)
   }, [recordingError])
 
-  const handleVoice = async () => {
+  const handleVoice = useCallback(async () => {
     if (isRecording) {
       try {
         setIsTranscribing(true)
         const audioBlob = await stopRecording()
         const key = getDeepgramKey()
         transcriptionService.setApiKey(key)
-        const result = await transcriptionService.transcribe(audioBlob, { language: 'fi' })
-        if (result.transcript) {
-          const transcript = result.transcript
+        const { transcript } = await transcriptionService.transcribe(audioBlob, { language: 'fi' })
+        if (transcript) {
           if (groqParser.hasApiKey()) {
             try {
               setIsParsing(true)
@@ -92,26 +91,26 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
       setError('')
       await startRecording()
     }
-  }
+  }, [isRecording, stopRecording, startRecording])
 
-  const handleSaveGroqKey = () => {
+  const handleSaveGroqKey = useCallback(() => {
     const trimmed = groqKeyInput.trim()
     if (!trimmed) return
     groqParser.setApiKey(trimmed)
     setGroqKeyInput('')
     setShowGroqPrompt(false)
-  }
+  }, [groqKeyInput])
 
-  const handleSaveKey = () => {
+  const handleSaveKey = useCallback(() => {
     const trimmed = keyInput.trim()
     if (!trimmed) return
     localStorage.setItem(LS_KEY, trimmed)
     setKeyInput('')
     setShowKeyPrompt(false)
     setError('')
-  }
+  }, [keyInput])
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
     setError('')
 
@@ -130,7 +129,7 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [message, date, time, initial, onSubmit])
 
   const title = isSent ? 'Reschedule reminder' : initial ? 'Edit reminder' : 'New reminder'
   const submitLabel = loading ? 'Saving…' : isSent ? 'Reschedule' : initial ? 'Save changes' : 'Add reminder'

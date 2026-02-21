@@ -42,6 +42,7 @@ export default function ReminderCard({ reminder, onEdit, onDelete }) {
         <button
           className="btn-icon danger"
           title="Arkistoi"
+          aria-label="Arkistoi"
           onClick={(e) => { e.stopPropagation(); onDelete(reminder.id) }}
         >
           ✕
