@@ -21,6 +21,7 @@ export default function App() {
   const [error, setError] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
+  const [archivedToast, setArchivedToast] = useState(false)
 
   const fetchReminders = useCallback(async () => {
     setLoading(true)
@@ -104,7 +105,6 @@ export default function App() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Arkistoidaanko muistutus?')) return
     const { error } = await supabase
       .from('reminders')
       .update({ deleted_at: new Date().toISOString() })
@@ -114,6 +114,7 @@ export default function App() {
       return
     }
     setReminders((prev) => prev.filter((r) => r.id !== id))
+    setArchivedToast(true)
   }
 
   const handleRestore = async (id) => {
@@ -200,6 +201,12 @@ export default function App() {
       )}
 
       {error && <div className="error-banner">{error}</div>}
+
+      {archivedToast && (
+        <div className="toast-overlay" onClick={() => setArchivedToast(false)}>
+          <div className="toast">Muistutus arkistoitu</div>
+        </div>
+      )}
 
       {loading ? (
         <div className="empty-state">Ladataan…</div>
