@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react'
 import { buildReminderTime, isoToHelsinki, todayHelsinki } from '../lib/dateUtils'
 import { useAudioRecorder, transcriptionService } from '@yourusername/stt-module'
 
-const _dgKeyInfo = (() => {
-  const k = import.meta.env.VITE_DEEPGRAM_API_KEY
-  if (!k) return 'VITE_DEEPGRAM_API_KEY: missing'
-  return `VITE_DEEPGRAM_API_KEY: set (${k.length} chars, starts "${k.slice(0, 4)}…")`
-})()
+const LS_KEY = 'deepgram_api_key'
+
+function getDeepgramKey() {
+  return localStorage.getItem(LS_KEY) || import.meta.env.VITE_DEEPGRAM_API_KEY || ''
+}
 
 export default function ReminderForm({ onSubmit, onCancel, initial }) {
   const [message, setMessage] = useState('')
@@ -15,6 +15,8 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
+  const [showKeyPrompt, setShowKeyPrompt] = useState(false)
+  const [keyInput, setKeyInput] = useState('')
 
   const { isRecording, error: recordingError, startRecording, stopRecording } = useAudioRecorder()
 
@@ -42,7 +44,8 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
       try {
         setIsTranscribing(true)
         const audioBlob = await stopRecording()
-        transcriptionService.setApiKey(import.meta.env.VITE_DEEPGRAM_API_KEY || '')
+        const key = getDeepgramKey()
+        transcriptionService.setApiKey(key)
         const result = await transcriptionService.transcribe(audioBlob)
         if (result.transcript) {
           setMessage(prev => prev ? prev + ' ' + result.transcript : result.transcript)
@@ -53,9 +56,22 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
         setIsTranscribing(false)
       }
     } else {
+      if (!getDeepgramKey()) {
+        setShowKeyPrompt(true)
+        return
+      }
       setError('')
       await startRecording()
     }
+  }
+
+  const handleSaveKey = () => {
+    const trimmed = keyInput.trim()
+    if (!trimmed) return
+    localStorage.setItem(LS_KEY, trimmed)
+    setKeyInput('')
+    setShowKeyPrompt(false)
+    setError('')
   }
 
   const handleSubmit = async (e) => {
@@ -132,6 +148,30 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
         </div>
       </div>
 
+      {showKeyPrompt && (
+        <div className="key-prompt">
+          <p className="key-prompt__label">Enter your Deepgram API key to enable voice input:</p>
+          <div className="key-prompt__row">
+            <input
+              type="password"
+              className="key-prompt__input"
+              placeholder="Paste API key here…"
+              value={keyInput}
+              onChange={(e) => setKeyInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSaveKey())}
+              autoFocus
+            />
+            <button type="button" className="btn btn-primary" onClick={handleSaveKey}>
+              Save
+            </button>
+          </div>
+          <p className="key-prompt__hint">
+            Stored in this browser only. Get a free key at{' '}
+            <a href="https://console.deepgram.com" target="_blank" rel="noreferrer">console.deepgram.com</a>.
+          </p>
+        </div>
+      )}
+
       <div className="field-row">
         <div className="field">
           <label htmlFor="date">Date <span className="optional">(leave empty = today)</span></label>
@@ -163,7 +203,6 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
       </p>
 
       {error && <p className="form-error">{error}</p>}
-      <p style={{fontSize:'11px',color:'#999',marginTop:'4px'}}>{_dgKeyInfo}</p>
 
       <div className="form-actions">
         <button type="button" className="btn btn-ghost" onClick={onCancel} disabled={loading}>
