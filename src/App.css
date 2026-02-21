@@ -11,7 +11,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
-  background: var(--surface);
+  background: linear-gradient(180deg, #1a1a28 0%, var(--surface) 100%);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -76,7 +76,7 @@
   color: var(--text);
 }
 .btn-icon.danger:hover {
-  background: #fee2e2;
+  background: rgba(248, 113, 113, 0.15);
   color: var(--danger);
 }
 
@@ -156,11 +156,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 .reminder-card:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  background: #fafafa;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  background: #1c1c28;
 }
 .reminder-card:active {
-  background: #f3f4f6;
+  background: #202030;
 }
 .reminder-card.pending {
   border-left-color: var(--pending);
@@ -200,13 +200,13 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--pending);
-  background: #fef3c7;
+  background: rgba(251, 191, 36, 0.15);
   padding: 0.1rem 0.45rem;
   border-radius: 4px;
 }
 .card-countdown.overdue {
   color: var(--overdue);
-  background: #fee2e2;
+  background: rgba(248, 113, 113, 0.15);
 }
 
 .card-side {
@@ -226,12 +226,12 @@
   border-radius: 4px;
 }
 .status-badge.pending {
-  background: #fef3c7;
-  color: #92400e;
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
 }
 .status-badge.sent {
-  background: #d1fae5;
-  color: #065f46;
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
 }
 
 .card-actions {
@@ -284,9 +284,9 @@
 
 .error-banner {
   margin: 1rem 1.5rem 0;
-  background: #fee2e2;
-  color: #991b1b;
-  border: 1px solid #fca5a5;
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.3);
   border-radius: 8px;
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
@@ -305,17 +305,18 @@
   bottom: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
-  background: #1f2937;
-  color: #f9fafb;
+  background: #252535;
+  color: #e2e2ef;
   padding: 0.6rem 1.25rem;
   border-radius: 999px;
   font-size: 0.9rem;
   white-space: nowrap;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  border: 1px solid #3a3a50;
 }
 
 .toast-undo {
@@ -330,7 +331,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.65);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -348,7 +349,7 @@
   width: 100%;
   max-width: 460px;
   min-width: 0;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
   margin: auto;
 }
 
@@ -440,15 +441,15 @@
 }
 
 @keyframes voice-pulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-  50%       { transform: scale(1.08); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+  50%       { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
 }
 
 .voice-btn__spinner {
   display: block;
   width: 14px;
   height: 14px;
-  border: 2px solid var(--border);
+  border: 2px solid #2a2a3c;
   border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -520,7 +521,7 @@
 .field input[type="time"]:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+  box-shadow: 0 0 0 3px rgba(124, 109, 245, 0.2);
 }
 
 .optional {
