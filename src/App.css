@@ -312,7 +312,17 @@
   font-size: 0.9rem;
   white-space: nowrap;
   box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-  pointer-events: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.toast-undo {
+  font-weight: 700;
+  color: #a5b4fc;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* ── Modal ──────────────────────────────────────────── */
