@@ -401,6 +401,12 @@
   color: var(--text);
   transition: border-color 0.15s;
   resize: vertical;
+  box-sizing: border-box;
+}
+
+.field input[type="date"],
+.field input[type="time"] {
+  height: 2.6rem;
 }
 .field textarea:focus,
 .field input[type="date"]:focus,
