@@ -3,7 +3,7 @@ const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
 const MODEL = 'llama-3.3-70b-versatile'
 
 const SYSTEM_PROMPT = `You are a reminder parser. Extract from Finnish (or any language) text:
-- message: the reminder topic only (concise, strip date/time words), in the same language as input
+- message: the FULL reminder content with ALL details preserved. Keep every piece of information the user mentioned — names, actions, context, quantities, everything. Only remove the scheduling phrases (specific date, time, day-of-week references used to set when the reminder fires). Do NOT summarise or shorten. The message should be in the same language as the input.
 - date: ISO date YYYY-MM-DD or null if not mentioned. Use todayDate for relative terms: "huomenna"/"tomorrow" = +1 day, "ylihuomenna"/"day after tomorrow" = +2 days, "ensi viikolla"/"next week" = +7 days, "tänään"/"today" = same day
 - time: HH:MM 24h format or null if not mentioned. "puolipäivä" = 12:00, "puoli" before hour means :30 (e.g. "puoli kaksi" = 13:30), "iltapäivällä" hint PM, "aamulla" hint AM
 Respond ONLY with valid JSON: {"message":"...","date":"...or null","time":"...or null"}`
@@ -14,7 +14,7 @@ const groqParser = {
   },
 
   getApiKey() {
-    return localStorage.getItem(STORAGE_KEY) || import.meta.env.VITE_GROQ_API_KEY || ''
+    return import.meta.env.VITE_GROQ_API_KEY || localStorage.getItem(STORAGE_KEY) || ''
   },
 
   hasApiKey() {
@@ -36,7 +36,7 @@ const groqParser = {
       body: JSON.stringify({
         model: MODEL,
         temperature: 0,
-        max_tokens: 200,
+        max_tokens: 400,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: `Today is ${todayDateStr}.\n\nText: "${transcript}"` },
