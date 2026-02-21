@@ -46,7 +46,7 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
         const audioBlob = await stopRecording()
         const key = getDeepgramKey()
         transcriptionService.setApiKey(key)
-        const result = await transcriptionService.transcribe(audioBlob)
+        const result = await transcriptionService.transcribe(audioBlob, { language: 'fi' })
         if (result.transcript) {
           setMessage(prev => prev ? prev + ' ' + result.transcript : result.transcript)
         }
