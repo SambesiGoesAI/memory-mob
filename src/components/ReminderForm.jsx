@@ -51,7 +51,14 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
           setMessage(prev => prev ? prev + ' ' + result.transcript : result.transcript)
         }
       } catch (err) {
-        setError(err.message || 'Transcription failed.')
+        const msg = err.message || 'Transcription failed.'
+        if (msg.includes('401')) {
+          localStorage.removeItem(LS_KEY)
+          setShowKeyPrompt(true)
+          setError('API key rejected (401) — please enter a valid key.')
+        } else {
+          setError(msg)
+        }
       } finally {
         setIsTranscribing(false)
       }
