@@ -7,7 +7,7 @@ export default defineConfig({
   base: '/memory-mob/',
   resolve: {
     alias: {
-      '@yourusername/stt-module': '/home/user/20250428-test1/stt-module/src/index.ts',
+      '@yourusername/stt-module': '/home/user/memory-mob/src/vendor/stt-module/index.ts',
     },
   },
 })
