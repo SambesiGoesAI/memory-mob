@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { buildReminderTime, isoToHelsinki, todayHelsinki } from '../lib/dateUtils'
 import { useAudioRecorder, transcriptionService } from '@yourusername/stt-module'
+import groqParser from '../lib/groqParser'
 
 const LS_KEY = 'deepgram_api_key'
 
@@ -15,8 +16,11 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
+  const [isParsing, setIsParsing] = useState(false)
   const [showKeyPrompt, setShowKeyPrompt] = useState(false)
   const [keyInput, setKeyInput] = useState('')
+  const [showGroqPrompt, setShowGroqPrompt] = useState(false)
+  const [groqKeyInput, setGroqKeyInput] = useState('')
 
   const { isRecording, error: recordingError, startRecording, stopRecording } = useAudioRecorder()
 
@@ -48,7 +52,25 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
         transcriptionService.setApiKey(key)
         const result = await transcriptionService.transcribe(audioBlob, { language: 'fi' })
         if (result.transcript) {
-          setMessage(prev => prev ? prev + ' ' + result.transcript : result.transcript)
+          const transcript = result.transcript
+          if (groqParser.hasApiKey()) {
+            try {
+              setIsParsing(true)
+              const parsed = await groqParser.parse(transcript, todayHelsinki())
+              if (parsed.message) setMessage(parsed.message)
+              if (parsed.date) setDate(parsed.date)
+              if (parsed.time) setTime(parsed.time)
+            } catch (err) {
+              // NLP failed — fall back to raw transcript in message field
+              setMessage(prev => prev ? prev + ' ' + transcript : transcript)
+              setError('NLP parsing failed, raw transcript used: ' + (err.message || ''))
+            } finally {
+              setIsParsing(false)
+            }
+          } else {
+            // No Groq key — just put transcript in message field as before
+            setMessage(prev => prev ? prev + ' ' + transcript : transcript)
+          }
         }
       } catch (err) {
         const msg = err.message || 'Transcription failed.'
@@ -70,6 +92,14 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
       setError('')
       await startRecording()
     }
+  }
+
+  const handleSaveGroqKey = () => {
+    const trimmed = groqKeyInput.trim()
+    if (!trimmed) return
+    groqParser.setApiKey(trimmed)
+    setGroqKeyInput('')
+    setShowGroqPrompt(false)
   }
 
   const handleSaveKey = () => {
@@ -105,7 +135,7 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
   const title = isSent ? 'Reschedule reminder' : initial ? 'Edit reminder' : 'New reminder'
   const submitLabel = loading ? 'Saving…' : isSent ? 'Reschedule' : initial ? 'Save changes' : 'Add reminder'
 
-  const voiceLabel = isTranscribing ? 'Transcribing…' : isRecording ? 'Stop recording' : 'Speak your reminder'
+  const voiceLabel = isParsing ? 'Parsing…' : isTranscribing ? 'Transcribing…' : isRecording ? 'Stop recording' : 'Speak your reminder'
 
   return (
     <form className="reminder-form" onSubmit={handleSubmit}>
@@ -129,10 +159,10 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
               className={[
                 'voice-btn',
                 isRecording ? 'voice-btn--recording' : '',
-                isTranscribing ? 'voice-btn--busy' : '',
+                (isTranscribing || isParsing) ? 'voice-btn--busy' : '',
               ].join(' ').trim()}
               onClick={handleVoice}
-              disabled={isTranscribing}
+              disabled={isTranscribing || isParsing}
               title={voiceLabel}
               aria-label={voiceLabel}
             >
@@ -175,6 +205,37 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
           <p className="key-prompt__hint">
             Stored in this browser only. Get a free key at{' '}
             <a href="https://console.deepgram.com" target="_blank" rel="noreferrer">console.deepgram.com</a>.
+          </p>
+        </div>
+      )}
+
+      {!groqParser.hasApiKey() && !showGroqPrompt && (
+        <p className="key-prompt__hint" style={{marginTop: '0.5rem'}}>
+          <button type="button" className="btn btn-ghost" style={{fontSize:'0.8rem', padding:'0.2rem 0.5rem'}} onClick={() => setShowGroqPrompt(true)}>
+            + Add Groq key for smart date/time parsing
+          </button>
+        </p>
+      )}
+      {showGroqPrompt && (
+        <div className="key-prompt">
+          <p className="key-prompt__label">Enter your Groq API key to enable smart date/time parsing from voice:</p>
+          <div className="key-prompt__row">
+            <input
+              type="password"
+              className="key-prompt__input"
+              placeholder="Paste Groq API key here…"
+              value={groqKeyInput}
+              onChange={(e) => setGroqKeyInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSaveGroqKey())}
+              autoFocus
+            />
+            <button type="button" className="btn btn-primary" onClick={handleSaveGroqKey}>
+              Save
+            </button>
+          </div>
+          <p className="key-prompt__hint">
+            Free key at <a href="https://console.groq.com" target="_blank" rel="noreferrer">console.groq.com</a>.
+            Without this, voice only fills the text field.
           </p>
         </div>
       )}
