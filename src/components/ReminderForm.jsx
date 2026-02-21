@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { buildReminderTime, isoToHelsinki, todayHelsinki } from '../lib/dateUtils'
+import { useAudioRecorder, transcriptionService } from '@yourusername/stt-module'
 
 export default function ReminderForm({ onSubmit, onCancel, initial }) {
   const [message, setMessage] = useState('')
@@ -7,6 +8,9 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
   const [time, setTime] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isTranscribing, setIsTranscribing] = useState(false)
+
+  const { isRecording, error: recordingError, startRecording, stopRecording } = useAudioRecorder()
 
   const isSent = initial?.status === 'sent'
 
@@ -22,6 +26,31 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
       setTime('')
     }
   }, [initial])
+
+  useEffect(() => {
+    if (recordingError) setError(recordingError)
+  }, [recordingError])
+
+  const handleVoice = async () => {
+    if (isRecording) {
+      try {
+        setIsTranscribing(true)
+        const audioBlob = await stopRecording()
+        transcriptionService.setApiKey(import.meta.env.VITE_DEEPGRAM_API_KEY || '')
+        const result = await transcriptionService.transcribe(audioBlob)
+        if (result.transcript) {
+          setMessage(prev => prev ? prev + ' ' + result.transcript : result.transcript)
+        }
+      } catch (err) {
+        setError(err.message || 'Transcription failed.')
+      } finally {
+        setIsTranscribing(false)
+      }
+    } else {
+      setError('')
+      await startRecording()
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -47,21 +76,54 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
   const title = isSent ? 'Reschedule reminder' : initial ? 'Edit reminder' : 'New reminder'
   const submitLabel = loading ? 'Saving…' : isSent ? 'Reschedule' : initial ? 'Save changes' : 'Add reminder'
 
+  const voiceLabel = isTranscribing ? 'Transcribing…' : isRecording ? 'Stop recording' : 'Speak your reminder'
+
   return (
     <form className="reminder-form" onSubmit={handleSubmit}>
       <h2>{title}</h2>
 
       <div className="field">
         <label htmlFor="msg">What do you want to remember?</label>
-        <textarea
-          id="msg"
-          rows={3}
-          placeholder="e.g. Buy milk, Call dad, Pay electricity bill…"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          disabled={isSent}
-          className={isSent ? 'field-disabled' : ''}
-        />
+        <div className="textarea-wrapper">
+          <textarea
+            id="msg"
+            rows={3}
+            placeholder="e.g. Buy milk, Call dad, Pay electricity bill…"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            disabled={isSent}
+            className={isSent ? 'field-disabled' : ''}
+          />
+          {!isSent && (
+            <button
+              type="button"
+              className={[
+                'voice-btn',
+                isRecording ? 'voice-btn--recording' : '',
+                isTranscribing ? 'voice-btn--busy' : '',
+              ].join(' ').trim()}
+              onClick={handleVoice}
+              disabled={isTranscribing}
+              title={voiceLabel}
+              aria-label={voiceLabel}
+            >
+              {isTranscribing ? (
+                <span className="voice-btn__spinner" aria-hidden="true" />
+              ) : isRecording ? (
+                /* Stop icon */
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+                  <rect x="2" y="2" width="10" height="10" rx="2" />
+                </svg>
+              ) : (
+                /* Microphone icon */
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4z"/>
+                  <path d="M19 10a1 1 0 0 0-2 0 5 5 0 0 1-10 0 1 1 0 0 0-2 0 7 7 0 0 0 6 6.92V19h-2a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2h-2v-2.08A7 7 0 0 0 19 10z"/>
+                </svg>
+              )}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="field-row">
