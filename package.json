@@ -11,8 +11,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.97.0",
-    "@yourusername/stt-module": "file:../20250428-test1/stt-module",
-    "react": "^19.2.0",
+"react": "^19.2.0",
     "react-dom": "^19.2.0",
     "uuid": "^13.0.0"
   },
