@@ -292,6 +292,29 @@
   font-size: 0.875rem;
 }
 
+/* ── Archive toast ──────────────────────────────────── */
+
+.toast-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-primary);
+  color: var(--surface);
+  padding: 0.6rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  pointer-events: none;
+}
+
 /* ── Modal ──────────────────────────────────────────── */
 
 .modal-overlay {
