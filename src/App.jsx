@@ -115,6 +115,7 @@ export default function App() {
     }
     setReminders((prev) => prev.filter((r) => r.id !== id))
     setArchivedToast(true)
+    setTimeout(() => setArchivedToast(false), 2500)
   }
 
   const handleRestore = async (id) => {
