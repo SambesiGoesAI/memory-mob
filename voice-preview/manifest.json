@@ -1,0 +1,25 @@
+{
+  "name": "Muistutukset",
+  "short_name": "Muistutukset",
+  "description": "Finnish mobile reminder app",
+  "start_url": "/memory-mob/",
+  "scope": "/memory-mob/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#6366f1",
+  "background_color": "#f5f5f5",
+  "icons": [
+    {
+      "src": "/memory-mob/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/memory-mob/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

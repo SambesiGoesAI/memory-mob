@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="100" ry="100" fill="#6366f1"/>
+
+  <!-- Bell body -->
+  <path d="M256 100
+    C256 100 180 130 168 220
+    L152 340
+    L360 340
+    L344 220
+    C332 130 256 100 256 100 Z"
+    fill="#ffffff"/>
+
+  <!-- Bell top knob -->
+  <circle cx="256" cy="96" r="22" fill="#ffffff"/>
+
+  <!-- Bell clapper -->
+  <rect x="244" y="336" width="24" height="28" rx="4" fill="#ffffff"/>
+
+  <!-- Bell base / mouth -->
+  <ellipse cx="256" cy="342" rx="60" ry="14" fill="#ffffff"/>
+
+  <!-- Bell clapper ball -->
+  <circle cx="256" cy="378" r="22" fill="#ffffff"/>
+
+  <!-- Exclamation mark dot (reminder indicator) -->
+  <circle cx="340" cy="172" r="42" fill="#f59e0b"/>
+  <rect x="330" y="145" width="20" height="18" rx="5" fill="#1e1b4b"/>
+  <circle cx="340" cy="175" r="7" fill="#1e1b4b"/>
+</svg>
