@@ -337,6 +337,7 @@
   z-index: 100;
   padding: 1rem;
   overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
   -webkit-overflow-scrolling: touch;
 }
 
