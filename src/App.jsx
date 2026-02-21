@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from './lib/supabase'
 import ReminderCard from './components/ReminderCard'
 import ArchiveCard from './components/ArchiveCard'
@@ -21,7 +21,8 @@ export default function App() {
   const [error, setError] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
-  const [archivedToast, setArchivedToast] = useState(false)
+  const [archivedToastId, setArchivedToastId] = useState(null)
+  const toastTimer = useRef(null)
 
   const fetchReminders = useCallback(async () => {
     setLoading(true)
@@ -114,8 +115,24 @@ export default function App() {
       return
     }
     setReminders((prev) => prev.filter((r) => r.id !== id))
-    setArchivedToast(true)
-    setTimeout(() => setArchivedToast(false), 2500)
+    clearTimeout(toastTimer.current)
+    setArchivedToastId(id)
+    toastTimer.current = setTimeout(() => setArchivedToastId(null), 2500)
+  }
+
+  const handleUndoArchive = async () => {
+    clearTimeout(toastTimer.current)
+    const id = archivedToastId
+    setArchivedToastId(null)
+    const { error } = await supabase
+      .from('reminders')
+      .update({ deleted_at: null })
+      .eq('id', id)
+    if (error) {
+      setError('Palautus epäonnistui: ' + error.message)
+      return
+    }
+    await fetchReminders()
   }
 
   const handleRestore = async (id) => {
@@ -203,9 +220,11 @@ export default function App() {
 
       {error && <div className="error-banner">{error}</div>}
 
-      {archivedToast && (
-        <div className="toast-overlay" onClick={() => setArchivedToast(false)}>
-          <div className="toast">Muistutus arkistoitu</div>
+      {archivedToastId && (
+        <div className="toast-overlay" onClick={() => { clearTimeout(toastTimer.current); setArchivedToastId(null) }}>
+          <div className="toast" onClick={(e) => { e.stopPropagation(); handleUndoArchive() }}>
+            Muistutus arkistoitu <span className="toast-undo">Kumoa</span>
+          </div>
         </div>
       )}
 
