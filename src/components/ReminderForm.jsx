@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react'
 import { buildReminderTime, isoToHelsinki, todayHelsinki } from '../lib/dateUtils'
 import { useAudioRecorder, transcriptionService } from '@yourusername/stt-module'
 
+const _dgKeyInfo = (() => {
+  const k = import.meta.env.VITE_DEEPGRAM_API_KEY
+  if (!k) return 'VITE_DEEPGRAM_API_KEY: missing'
+  return `VITE_DEEPGRAM_API_KEY: set (${k.length} chars, starts "${k.slice(0, 4)}…")`
+})()
+
 export default function ReminderForm({ onSubmit, onCancel, initial }) {
   const [message, setMessage] = useState('')
   const [date, setDate] = useState('')
@@ -157,6 +163,7 @@ export default function ReminderForm({ onSubmit, onCancel, initial }) {
       </p>
 
       {error && <p className="form-error">{error}</p>}
+      <p style={{fontSize:'11px',color:'#999',marginTop:'4px'}}>{_dgKeyInfo}</p>
 
       <div className="form-actions">
         <button type="button" className="btn btn-ghost" onClick={onCancel} disabled={loading}>
