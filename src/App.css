@@ -280,6 +280,31 @@
   font-size: 0.82rem;
 }
 
+/* ── Archive quiet link ─────────────────────────────── */
+
+.archive-link-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 1.25rem 1.5rem 2rem;
+}
+
+.archive-link {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+  opacity: 0.6;
+}
+.archive-link:hover {
+  color: var(--text);
+  background: var(--border);
+  opacity: 1;
+}
+
 /* ── Error banner ───────────────────────────────────── */
 
 .error-banner {

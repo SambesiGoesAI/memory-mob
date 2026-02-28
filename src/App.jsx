@@ -25,21 +25,29 @@ export default function App() {
   const [showForm, setShowForm] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
   const [archivedToastId, setArchivedToastId] = useState(null)
+  const [archivedCount, setArchivedCount] = useState(0)
   const toastTimer = useRef(null)
 
   const fetchReminders = useCallback(async () => {
     setLoading(true)
     setError('')
-    const { data, error } = await supabase
-      .from('reminders')
-      .select('*')
-      .is('deleted_at', null)
-      .order('reminder_time', { ascending: true })
+    const [{ data, error }, { count }] = await Promise.all([
+      supabase
+        .from('reminders')
+        .select('*')
+        .is('deleted_at', null)
+        .order('reminder_time', { ascending: true }),
+      supabase
+        .from('reminders')
+        .select('*', { count: 'exact', head: true })
+        .not('deleted_at', 'is', null),
+    ])
 
     if (error) {
       setError('Failed to load reminders: ' + error.message)
     } else {
       setReminders(data)
+      setArchivedCount(count ?? 0)
     }
     setLoading(false)
   }, [])
@@ -179,12 +187,6 @@ export default function App() {
           {view === 'list' ? (
             <>
               <button
-                className="btn btn-ghost"
-                onClick={() => setView('archive')}
-              >
-                Arkisto
-              </button>
-              <button
                 className="btn btn-primary"
                 onClick={() => { setEditTarget(null); setShowForm(true) }}
               >
@@ -285,6 +287,16 @@ export default function App() {
             </li>
           ))}
         </ul>
+      )}
+
+      {view === 'list' && !loading && (
+        <div className="archive-link-wrap">
+          <button className="archive-link" onClick={() => setView('archive')}>
+            {archivedCount > 0
+              ? `Arkistossa ${archivedCount} muistutusta →`
+              : 'Arkisto →'}
+          </button>
+        </div>
       )}
     </div>
   )
